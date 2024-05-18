@@ -1,0 +1,19 @@
+{
+  "version": "36.0.0",
+  "files": {
+    "78d240d2d8ce13a9179d2cf9b0940afd1d7140b9074f15dd0f8455bbc9484d6e": {
+      "source": {
+        "path": "OCR-API.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-current_region": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "78d240d2d8ce13a9179d2cf9b0940afd1d7140b9074f15dd0f8455bbc9484d6e.json",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

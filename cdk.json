@@ -1,0 +1,8 @@
+{
+    "app": "python3 app.py",
+    "context": {
+        "OCR_LAMBDA_TAG": "1.0.0",
+        "PROJECT_NAME": "serverless-ocr",
+        "environment": "development"
+    }
+}

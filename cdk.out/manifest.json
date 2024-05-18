@@ -1,0 +1,114 @@
+{
+  "version": "36.0.0",
+  "artifacts": {
+    "OCR-API.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "OCR-API.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "OCR-API": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/unknown-region",
+      "properties": {
+        "templateFile": "OCR-API.template.json",
+        "terminationProtection": false,
+        "tags": {
+          "application": "ocr-api",
+          "environment": "dev"
+        },
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/78d240d2d8ce13a9179d2cf9b0940afd1d7140b9074f15dd0f8455bbc9484d6e.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "OCR-API.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "OCR-API.assets"
+      ],
+      "metadata": {
+        "/OCR-API": [
+          {
+            "type": "aws:cdk:stack-tags",
+            "data": [
+              {
+                "Key": "application",
+                "Value": "ocr-api"
+              },
+              {
+                "Key": "environment",
+                "Value": "dev"
+              }
+            ]
+          }
+        ],
+        "/OCR-API/Table/Table/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "Table710B521B"
+          }
+        ],
+        "/OCR-API/Bucket/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "Bucket83908E77"
+          }
+        ],
+        "/OCR-API/Bus/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusEA82B648"
+          }
+        ],
+        "/OCR-API/Topic/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "TopicBFC7AF6E"
+          }
+        ],
+        "/OCR-API/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/OCR-API/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/OCR-API/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/OCR-API/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "OCR-API"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}

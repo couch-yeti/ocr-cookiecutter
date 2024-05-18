@@ -29,9 +29,6 @@ class Func(Construct):
             removal_policy=cdk.RemovalPolicy.DESTROY,
         )
 
-    def __getattr__(self, item):
-        return getattr(self.function, item)
-
     def _get_repo(self):
         return aws_ecr.Repository.from_repository_name(
             scope=self,
@@ -56,6 +53,3 @@ class Table(Construct):
             removal_policy=cdk.RemovalPolicy.DESTROY,
             time_to_live_attribute="expiration",
         )
-
-    def __getattr__(self, item):
-        return getattr(self.table, item)
