@@ -4,7 +4,7 @@ from uuid import uuid4
 from boto3.dynamodb.conditions import Key
 from fastapi import APIRouter, HTTPException
 
-from api import schema
+from api.routes.data import schema
 from common.aws import dynamo, s3
 
 router = APIRouter(prefix="/document", tags=["document"])

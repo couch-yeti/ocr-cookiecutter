@@ -5,6 +5,13 @@ description = ""
 authors = ["couch-yeti <ericwb52@gmail.com>"]
 readme = "README.md"
 
+packages = [{include ="api", from = "src"},
+            {include ="core", from = "src/api"},
+            {include ="postprocess", from = "src"},
+            {include ="preprocess", from = "src"},
+            {include ="authorizer", from = "src"},
+            {include ="common", from = "src"}]
+
 [tool.poetry.dependencies]
 python = "^3.10"
 fastapi = "^0.111.0"

@@ -2,8 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 
+from routes import document, ocr
 
 app = FastAPI()
+app.add_route()
 
 app.add_middleware(
     CORSMiddleware,

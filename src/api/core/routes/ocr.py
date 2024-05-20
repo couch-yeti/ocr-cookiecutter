@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from common.aws import dynamo, s3
-from api import schema
+from api.routes.data import schema
 
 router = APIRouter(prefix="/ocr", tags=["ocr"])
 

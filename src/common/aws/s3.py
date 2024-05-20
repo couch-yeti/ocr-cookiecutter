@@ -1,15 +1,13 @@
 import boto3
 
 
-def upload_file(
-    file_path: str, bucket_name: str, session: boto3.Session = None
-):
+def put(file, s3_key, bucket: str, session: boto3.Session = None):
+    """Upload file to s3"""
     if not session:
         session = boto3._get_default_session()
-    s3 = session.resource("s3")
-    bucket = s3.Bucket(bucket_name)
-    with open(file_path, "rb") as f:
-        bucket.upload_fileobj(f, file_path.split("/")[-1])
+    client = session.client("s3")
+
+    client.put_object(Bucket=bucket, Key=s3_key, Body=file)
 
 
 def download_file(
