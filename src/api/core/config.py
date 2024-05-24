@@ -3,10 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
-from common.log import get_child_logger
-from routes import itinerary, trips
+from core.routes import document, ocr
 
-logger = get_child_logger()
 app = FastAPI(
     docs_url="/swagger/ui",
 )
@@ -37,6 +35,6 @@ class ExceptionLoggingMiddleware(BaseHTTPMiddleware):
             )
 
 
-app.include_router(trips.router)
-app.include_router(itinerary.router)
+app.include_router(document.router)
+app.include_router(ocr.router)
 app.add_middleware(ExceptionLoggingMiddleware)

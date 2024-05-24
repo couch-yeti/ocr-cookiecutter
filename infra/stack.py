@@ -184,6 +184,8 @@ class Main(cdk.Stack):
             "TABLE_NAME": self.table.table_name,
             "BUCKET_NAME": self.bucket.bucket_name,
             "BUS_NAME": self.bridge.event_bus_name,
+            "LOG_LEVEL": "INFO",
+            "PROJECT_NAME": os.environ["PROJECT"],
         }
         for key, value in vars.items():
             item.function.add_environment(key, value)
