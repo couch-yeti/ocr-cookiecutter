@@ -14,7 +14,6 @@ class Func(Construct):
         path: str,
         memory: str,
         duration: cdk.Duration,
-        environment: dict,
     ):
         super().__init__(scope=scope, id=cid)
         self.function = aws_lambda.DockerImageFunction(
@@ -25,8 +24,6 @@ class Func(Construct):
             ),
             memory_size=memory,
             timeout=duration,
-            environment=environment,
-            removal_policy=cdk.RemovalPolicy.DESTROY,
         )
 
     def _get_repo(self):

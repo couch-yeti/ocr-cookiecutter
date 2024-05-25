@@ -4,7 +4,7 @@ import aws_cdk as cdk
 from aws_cdk import (
     aws_s3,
     aws_events,
-    aws_sns_subscriptions,
+    aws_events_targets,
     aws_sns,
     aws_apigateway,
 )
@@ -28,21 +28,26 @@ class API(cdk.NestedStack):
             cid="proxy",
             tag=os.environ["OCR_LAMBDA_TAG"],
             path="api/handler.lambda_handler",
-            memory="1024",
+            memory=1024,
             duration=cdk.Duration.seconds(30),
         )
         self.auth_lambda = Func(
             scope=self,
             cid="auth",
-            tag=os.envirosn["OCR_LAMBDA_TAG"],
+            tag=os.environ["OCR_LAMBDA_TAG"],
             path="auth/handler.lambda_handler",
-            memory="1024",
+            memory=1024,
             duration=cdk.Duration.seconds(30),
         )
 
     def _make_api_gateway(self):
         authorizer = aws_apigateway.RequestAuthorizer(
-            scope=self, id="Authorizer", handler=self.auth_lambda.function
+            scope=self,
+            id="Authorizer",
+            handler=self.auth_lambda.function,
+            identity_sources=[
+                aws_apigateway.IdentitySource.header("authorizationToken")
+            ],
         )
 
         self.api = aws_apigateway.RestApi(
@@ -91,10 +96,9 @@ class API(cdk.NestedStack):
         )
 
         # add proxy resource
-        self.api.root.add_resource(
-            "/{proxy+}",
+        self.api.root.add_proxy(
             default_integration=aws_apigateway.LambdaIntegration(
-                handler=self.proxy_lambda.function, proxy=True
+                handler=self.proxy_lambda.function
             ),
             any_method=True,
             default_method_options=aws_apigateway.MethodOptions(
@@ -118,7 +122,7 @@ class OCR(cdk.NestedStack):
             cid="preprocess",
             tag=os.environ["OCR_LAMBDA_TAG"],
             path="preprocess/handler.lambda_handler",
-            memory="1024",
+            memory=1024,
             duration=cdk.Duration.seconds(30),
         )
         self.postprocess_lambda = Func(
@@ -126,7 +130,7 @@ class OCR(cdk.NestedStack):
             cid="postprocess",
             tag=os.environ["OCR_LAMBDA_TAG"],
             path="postprocess/handler.lambda_handler",
-            memory="1024",
+            memory=1024,
             duration=cdk.Duration.seconds(30),
         )
 
@@ -148,7 +152,10 @@ class OCR(cdk.NestedStack):
                 source=["aws.sns"], resources=[self.sns_topic.topic_arn]
             ),
         )
-        self.ocr_rule.add_target(self.postprocess_lambda.function)
+        self.target = aws_events_targets.LambdaFunction(
+            self.postprocess_lambda.function
+        )
+        self.ocr_rule.add_target(self.target)
 
 
 class Main(cdk.Stack):
@@ -163,8 +170,9 @@ class Main(cdk.Stack):
         )
         self.bridge = aws_events.EventBus(scope=self, id="Bus")
         self.sns = aws_sns.Topic(scope=self, id="Topic")
+        self.build()
 
-    def buid(self):
+    def build(self):
         self.api_stack = API(scope=self, cid="API")
         self.ocr_stack = OCR(scope=self, cid="OCR")
         self._update_lambdas()
