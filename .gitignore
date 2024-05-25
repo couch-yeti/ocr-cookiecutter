@@ -1,3 +1,6 @@
+# cdk.out
+cdk.out/    # Ignore CDK local build output
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
