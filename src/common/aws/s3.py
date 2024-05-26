@@ -1,3 +1,5 @@
+import os
+
 import boto3
 
 
@@ -52,6 +54,6 @@ def generate_presigned_url(
             "Bucket": bucket_name,
             "Key": s3_key,
         },
-        expires_in=30,
+        ExpiresIn=30,
     )
     return url

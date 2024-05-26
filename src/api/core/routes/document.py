@@ -13,16 +13,19 @@ router = APIRouter(prefix="/document", tags=["document"])
 @router.post("/")
 def upload_document(document: schema.Document):
     """Upload a document to the system"""
-    table = dynamo.get_table(os.environ["TABLE"])
-    db_document = schema.make_db_schema(document)
-    item = db_document({"uid": str(uuid4()), **document.model_dump_json()})
-    table.put_item(Item=item.model_dump_json())
+    table = dynamo.get_table(os.environ["TABLE_NAME"])
+
+    uid = str(uuid4())
+    db_data = schema.BaseRecord(pk=uid, sk="request", uid=uid)
+    item = {**db_data.model_dump(), **document.model_dump()}
+    table.put_item(Item=item)
 
     return {
-        "uid": item.uid,
+        "uid": item["uid"],
         "url": s3.generate_presigned_url(
-            uid=item.uid,
-            document_name=document.name,
+            uid=item["uid"],
+            document_name=document.document_name,
+            bucket_name=os.environ["BUCKET_NAME"],
         ),
     }
 
@@ -30,7 +33,7 @@ def upload_document(document: schema.Document):
 @router.get("/")
 def get_document(uid: str = None, document_name: str = None):
     """Get a document from the system"""
-    table = dynamo.get_table(os.environ["TABLE"])
+    table = dynamo.get_table(os.environ["TABLE_NAME"])
     key = (
         Key("pk").eq(uid) & Key("sk").eq("document")
         if uid
@@ -52,4 +55,3 @@ def get_document(uid: str = None, document_name: str = None):
             uid=item["uid"], document_name=item["document_name"], method="get"
         )
     }
-

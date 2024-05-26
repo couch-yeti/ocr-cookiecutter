@@ -20,7 +20,7 @@ class Func(Construct):
             scope=self,
             id=cid,
             code=aws_lambda.DockerImageCode.from_ecr(
-                repository=self._get_repo(), tag=tag, cmd=[path]
+                repository=self._get_repo(), tag_or_digest=tag, cmd=[path]
             ),
             memory_size=memory,
             timeout=duration,

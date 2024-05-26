@@ -27,7 +27,7 @@ class API(cdk.NestedStack):
             scope=self,
             cid="proxy",
             tag=os.environ["OCR_LAMBDA_TAG"],
-            path="api/handler.lambda_handler",
+            path="api.handler.lambda_handler",
             memory=1024,
             duration=cdk.Duration.seconds(30),
         )
@@ -35,7 +35,7 @@ class API(cdk.NestedStack):
             scope=self,
             cid="auth",
             tag=os.environ["OCR_LAMBDA_TAG"],
-            path="auth/handler.lambda_handler",
+            path="auth.handler.lambda_handler",
             memory=1024,
             duration=cdk.Duration.seconds(30),
         )
@@ -121,7 +121,7 @@ class OCR(cdk.NestedStack):
             scope=self,
             cid="preprocess",
             tag=os.environ["OCR_LAMBDA_TAG"],
-            path="preprocess/handler.lambda_handler",
+            path="preprocess.handler.lambda_handler",
             memory=1024,
             duration=cdk.Duration.seconds(30),
         )
@@ -129,7 +129,7 @@ class OCR(cdk.NestedStack):
             scope=self,
             cid="postprocess",
             tag=os.environ["OCR_LAMBDA_TAG"],
-            path="postprocess/handler.lambda_handler",
+            path="postprocess.handler.lambda_handler",
             memory=1024,
             duration=cdk.Duration.seconds(30),
         )
@@ -162,7 +162,7 @@ class Main(cdk.Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        self.table = Table(self, "Table")
+        self.table = Table(self, "Table").table
         self.bucket = aws_s3.Bucket(
             self,
             "Bucket",
@@ -175,12 +175,13 @@ class Main(cdk.Stack):
     def build(self):
         self.api_stack = API(scope=self, cid="API")
         self.ocr_stack = OCR(scope=self, cid="OCR")
-        self._update_lambdas()
+        self._update_lambdas(self.api_stack)
+        self._update_lambdas(self.ocr_stack)
 
-    def _update_lambdas(self):
+    def _update_lambdas(self, stack):
 
-        for attr_name in dir(self):
-            attr = getattr(self, attr_name)
+        for attr_name in dir(stack):
+            attr = getattr(stack, attr_name)
             if isinstance(attr, Func):
                 self._grant_access(attr)
                 self._add_environment_vars(attr)
@@ -193,14 +194,14 @@ class Main(cdk.Stack):
             "BUCKET_NAME": self.bucket.bucket_name,
             "BUS_NAME": self.bridge.event_bus_name,
             "LOG_LEVEL": "INFO",
-            "PROJECT_NAME": os.environ["PROJECT"],
+            "PROJECT_NAME": os.environ["PROJECT_NAME"],
         }
         for key, value in vars.items():
             item.function.add_environment(key, value)
 
     def _grant_access(self, item: Func):
 
-        self.table.grant_read_write_data(item)
-        self.bucket.grant_read_write(item)
-        self.bridge.grant_put_events(item)
-        self.sns.grant_publish(item)
+        self.table.grant_read_write_data(item.function)
+        self.bucket.grant_read_write(item.function)
+        self.bridge.grant_put_events_to(item.function)
+        self.sns.grant_publish(item.function)

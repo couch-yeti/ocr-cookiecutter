@@ -17,24 +17,24 @@ app.add_middleware(
 )
 
 
-class ExceptionLoggingMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        try:
-            response = await call_next(request)
-            return response
-        except HTTPException as he:
-            logger.error(f"Exception: {he.status_code}", exc_info=True)
-            return JSONResponse(
-                context={"detail": he.detail}, status_code=he.status_code
-            )
+# class ExceptionLoggingMiddleware(BaseHTTPMiddleware):
+#     async def dispatch(self, request: Request, call_next):
+#         try:
+#             response = await call_next(request)
+#             return response
+#         except HTTPException as he:
+#             logger.error(f"Exception: {he.status_code}", exc_info=True)
+#             return JSONResponse(
+#                 context={"detail": he.detail}, status_code=he.status_code
+#             )
 
-        except Exception as e:
-            logger.error(f"Unhandled exception: {str(e)}", exc_info=True)
-            return JSONResponse(
-                content={"detail": "internal server error"}, status_code=500
-            )
+#         except Exception as e:
+#             logger.error(f"Unhandled exception: {str(e)}", exc_info=True)
+#             return JSONResponse(
+#                 content={"detail": "internal server error"}, status_code=500
+#             )
 
 
 app.include_router(document.router)
 app.include_router(ocr.router)
-app.add_middleware(ExceptionLoggingMiddleware)
+# app.add_middleware(ExceptionLoggingMiddleware)
