@@ -37,13 +37,13 @@ def get_file_data(
 
 
 def generate_presigned_url(
-    uid: str,
+    s3_key: str,
     document_name: str,
     bucket_name: str,
     method: str = "put",
     session: boto3.Session = None,
 ):
-    s3_key = f"input/{uid}/{document_name}"
+    
     client_method = {"get": "get_object", "put": "put_object"}
     if not session:
         session = boto3._get_default_session()

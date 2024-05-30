@@ -16,6 +16,7 @@ def upload_document(document: schema.Document):
     table = dynamo.get_table(os.environ["TABLE_NAME"])
 
     uid = str(uuid4())
+    s3_key = f"input/{uid}/{document.document_name}"
     db_data = schema.BaseRecord(pk=uid, sk="request", uid=uid)
     item = {**db_data.model_dump(), **document.model_dump()}
     table.put_item(Item=item)
@@ -23,7 +24,7 @@ def upload_document(document: schema.Document):
     return {
         "uid": item["uid"],
         "url": s3.generate_presigned_url(
-            uid=item["uid"],
+            s3_key=s3_key,
             document_name=document.document_name,
             bucket_name=os.environ["BUCKET_NAME"],
         ),

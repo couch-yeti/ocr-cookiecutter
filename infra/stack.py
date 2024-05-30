@@ -3,6 +3,7 @@ import os
 import aws_cdk as cdk
 from aws_cdk import (
     aws_s3,
+    aws_s3_notifications,
     aws_events,
     aws_events_targets,
     aws_sns,
@@ -175,6 +176,13 @@ class Main(cdk.Stack):
     def build(self):
         self.api_stack = API(scope=self, cid="API")
         self.ocr_stack = OCR(scope=self, cid="OCR")
+        self.bucket.add_event_notification(
+            aws_s3.EventType.OBJECT_CREATED,
+            aws_s3_notifications.LambdaDestination(
+                self.ocr_stack.preprocess_lambda.function
+            ),
+            aws_s3.NotificationKeyFilter(prefix="input/"),
+        )
         self._update_lambdas(self.api_stack)
         self._update_lambdas(self.ocr_stack)
 
