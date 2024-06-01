@@ -7,7 +7,7 @@ source .env
 REGION="us-west-2"    # Example: us-east-1
 PROFILE_NAME=$AWS_PROFILE   # Environment variable for AWS CLI Profile
 REPO_NAME=$PROJECT_NAME  # ECR Repository Name
-IMAGE_TAG="1.0.7"          # Tag for the image
+IMAGE_TAG="1.0.8"          # Tag for the image
 
 # Retrieve AWS account ID dynamically from STS
 ACCOUNT_ID=$(aws sts get-caller-identity --profile $PROFILE_NAME --query "Account" --output text)
@@ -23,7 +23,7 @@ fi
 aws ecr get-login-password --region $REGION --profile $PROFILE_NAME | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 
 # Build the Docker image
-docker build -t $REPO_NAME .
+docker build --platform linux/amd64 -t $REPO_NAME .
 
 # Tag the Docker image
 docker tag $REPO_NAME $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG

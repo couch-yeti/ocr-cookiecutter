@@ -53,7 +53,7 @@ class API(cdk.NestedStack):
 
         self.api = aws_apigateway.RestApi(
             scope=self,
-            id="gateway",
+            id=f"{os.environ['PROJECT_NAME']}-api",
             deploy=True,
             endpoint_types=[aws_apigateway.EndpointType.REGIONAL],
             deploy_options=aws_apigateway.StageOptions(

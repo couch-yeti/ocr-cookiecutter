@@ -1,7 +1,16 @@
 import json
 import os
 
+from aws_lambda_powertools import Logger
+from dotenv import load_dotenv
+
 from common.aws import dynamo, textract, s3
+
+
+load_dotenv()
+logger = Logger(
+    service=os.environ["PROJECT_NAME"], level=os.getenv("LOG_LEVEL", "WARN")
+)
 
 
 def parse_event(event):
@@ -23,6 +32,7 @@ def create_file_and_store(text: str, s3_key: str):
     return None
 
 
+@logger.inject_lambda_context(log_event=True, clear_state=True)
 def lambda_handler(event, context=None):
     """Revieve job update from textract through eventbridge, get and store result"""
 

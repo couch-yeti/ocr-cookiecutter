@@ -25,7 +25,6 @@ def upload_document(document: schema.Document):
         "uid": item["uid"],
         "url": s3.generate_presigned_url(
             s3_key=s3_key,
-            document_name=document.document_name,
             bucket_name=os.environ["BUCKET_NAME"],
         ),
     }

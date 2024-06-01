@@ -38,12 +38,11 @@ def get_file_data(
 
 def generate_presigned_url(
     s3_key: str,
-    document_name: str,
     bucket_name: str,
     method: str = "put",
     session: boto3.Session = None,
 ):
-    
+
     client_method = {"get": "get_object", "put": "put_object"}
     if not session:
         session = boto3._get_default_session()
@@ -53,7 +52,8 @@ def generate_presigned_url(
         Params={
             "Bucket": bucket_name,
             "Key": s3_key,
+            "ContentType": "application/pdf",
         },
-        ExpiresIn=30,
+        ExpiresIn=60,
     )
     return url

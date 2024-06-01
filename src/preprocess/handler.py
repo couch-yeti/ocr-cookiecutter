@@ -1,7 +1,15 @@
 import os
 import json
 
+from aws_lambda_powertools import Logger
+from dotenv import load_dotenv
+
 from common.aws import dynamo, textract
+
+load_dotenv()
+logger = Logger(
+    service=os.environ["PROJECT_NAME"], level=os.getenv("LOG_LEVEL", "WARN")
+)
 
 
 def parse_event(event):
@@ -14,6 +22,7 @@ def parse_event(event):
     return {"bucket": bucket, "key": key, "uid": uid}
 
 
+@logger.inject_lambda_context(log_event=True, clear_state=True)
 def lambda_handler(event, context=None):
 
     data = parse_event(event)
