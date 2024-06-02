@@ -12,13 +12,9 @@ def text_detection(s3_key: str, job_key: str, client: boto3.client):
                 "Name": s3_key,
             }
         },
-        OutputConfig={
-            "S3Bucket": os.environ["BUCKET_NAME"],
-            "S3Prefix": "output/",
-        },
         NotificationChannel={
             "SNSTopicArn": os.environ["SNS_TOPIC_ARN"],
-            "RoleArn": os.environ["TEXTRACT_SNS_ARN"],
+            "RoleArn": os.environ["TEXTRACT_ROLE_ARN"],
         },
     )
     return response
@@ -37,11 +33,7 @@ def doc_analysis(
         FeatureTypes=ocr_config,
         NotificationChannel={
             "SNSTopicArn": os.environ["SNS_TOPIC_ARN"],
-            "RoleArn": os.environ["TEXTRACT_SNS_ARN"],
-        },
-        OutputConfig={
-            "S3Bucket": os.environ["BUCKET_NAME"],
-            "S3Prefix": "output/",
+            "RoleArn": os.environ["TEXTRACT_ROLE_ARN"],
         },
     )
 
@@ -65,16 +57,18 @@ def start_ocr(
     return response["JobId"]
 
 
-def get_results(ocr_id: str, job_type: str, session: boto3.Session):
+def get_results(ocr_id: str, ocr_job_type: str, session: boto3.Session = None):
     """Loop through all pages of textract result and combine them"""
+
     if not session:
         session = boto3._get_default_session()
-
     client = session.client("textract")
-    if job_type == "text":
-        func = client.get_document_text_detection
-    else:
-        func = client.get_document_analysis
+    job_type_ = {
+        "text": client.get_document_text_detection,
+        "analysis": client.get_document_analysis,
+    }
+
+    func = job_type_[ocr_job_type]
     response = func(JobId=ocr_id)
     if response.get("NextToken"):
         next_token = response["NextToken"]

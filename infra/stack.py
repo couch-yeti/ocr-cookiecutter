@@ -8,6 +8,10 @@ from aws_cdk import (
     aws_events_targets,
     aws_sns,
     aws_apigateway,
+    aws_iam,
+    aws_sqs,
+    aws_sns_subscriptions as sns_subs,
+    aws_lambda_event_sources as lambda_sources,
 )
 from constructs import Construct
 
@@ -111,11 +115,13 @@ class API(cdk.NestedStack):
 class OCR(cdk.NestedStack):
     def __init__(self, scope, cid):
         super().__init__(scope, cid)
+
         self._make_ocr()
 
     def _make_ocr(self):
         self._make_ocr_lambdas()
         self._make_ocr_notifications()
+        self._grant_textract_access()
 
     def _make_ocr_lambdas(self):
         self.preprocess_lambda = Func(
@@ -135,28 +141,54 @@ class OCR(cdk.NestedStack):
             duration=cdk.Duration.seconds(30),
         )
 
+    def _grant_textract_access(self):
+        actions = [
+            "textract:StartDocumentTextDetection",
+            "textract:StartDocumentAnalysis",
+            "textract:GetDocumentTextDetection",
+            "textract:GetDocumentAnalysis",
+        ]
+        policy = aws_iam.PolicyStatement(actions=actions, resources=["*"])
+        self.preprocess_lambda.function.add_to_role_policy(statement=policy)
+        self.postprocess_lambda.function.add_to_role_policy(statement=policy)
+
     def _make_ocr_notifications(self):
+
+        self.textract_role = aws_iam.Role(
+            self,
+            "TextractRole",
+            assumed_by=aws_iam.ServicePrincipal("textract.amazonaws.com"),
+            managed_policies=[
+                aws_iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "service-role/AmazonTextractServiceRole"
+                )
+            ],
+        )
         self.sns_topic = aws_sns.Topic(
             scope=self,
             id="Topic",
             display_name="OCR-Topic",
             topic_name="ocr-topic",
         )
-        self.event_bridge = aws_events.EventBus(scope=self, id="Bus")
 
-        # make postprocess rule for lambda
-        self.ocr_rule = aws_events.Rule(
-            scope=self,
-            id="Rule",
-            event_bus=self.event_bridge,
-            event_pattern=aws_events.EventPattern(
-                source=["aws.sns"], resources=[self.sns_topic.topic_arn]
+        self.dlq = aws_sqs.Queue(self, "DLQ", queue_name="ocr-dlq")
+        self.sqs_queue = aws_sqs.Queue(
+            self,
+            "Queue",
+            queue_name="ocr-queue",
+            dead_letter_queue=aws_sqs.DeadLetterQueue(
+                max_receive_count=5, queue=self.dlq
             ),
+            visibility_timeout=cdk.Duration.seconds(30),
         )
-        self.target = aws_events_targets.LambdaFunction(
-            self.postprocess_lambda.function
+
+        self.sns_topic.grant_publish(self.textract_role)
+        self.sns_topic.add_subscription(
+            sns_subs.SqsSubscription(self.sqs_queue)
         )
-        self.ocr_rule.add_target(self.target)
+        self.postprocess_lambda.function.add_event_source(
+            lambda_sources.SqsEventSource(self.sqs_queue)
+        )
 
 
 class Main(cdk.Stack):
@@ -197,6 +229,7 @@ class Main(cdk.Stack):
     def _add_environment_vars(self, item: Func):
 
         vars = {
+            "TEXTRACT_ROLE_ARN": self.ocr_stack.textract_role.role_arn,
             "SNS_TOPIC_ARN": self.ocr_stack.sns_topic.topic_arn,
             "TABLE_NAME": self.table.table_name,
             "BUCKET_NAME": self.bucket.bucket_name,

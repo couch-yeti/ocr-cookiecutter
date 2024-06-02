@@ -18,7 +18,12 @@ def upload_document(document: schema.Document):
     uid = str(uuid4())
     s3_key = f"input/{uid}/{document.document_name}"
     db_data = schema.BaseRecord(pk=uid, sk="request", uid=uid)
-    item = {**db_data.model_dump(), **document.model_dump()}
+    ocr_job_type = "analysis" if document.ocr_config else "text"
+    item = {
+        "ocr_job_type": ocr_job_type,
+        **db_data.model_dump(),
+        **document.model_dump(),
+    }
     table.put_item(Item=item)
 
     return {

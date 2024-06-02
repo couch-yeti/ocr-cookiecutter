@@ -7,7 +7,7 @@ source .env
 REGION="us-west-2"    # Example: us-east-1
 PROFILE_NAME=$AWS_PROFILE   # Environment variable for AWS CLI Profile
 REPO_NAME=$PROJECT_NAME  # ECR Repository Name
-IMAGE_TAG="1.0.8"          # Tag for the image
+IMAGE_TAG=$OCR_LAMBDA_TAG   # Tag for the image
 
 # Retrieve AWS account ID dynamically from STS
 ACCOUNT_ID=$(aws sts get-caller-identity --profile $PROFILE_NAME --query "Account" --output text)

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field, create_model
+from pydantic import BaseModel, Field, field_validator
 
 now = datetime.now()
 
@@ -27,3 +27,16 @@ class BaseRecord(BaseModel):
 
 class Document(BaseModel):
     document_name: str = Field(description="The name of the document")
+    ocr_config: list[str] = Field(
+        description="A list of Textract options which can include tables, forms etc",
+        default=[],
+    )
+
+    # validator for ocr_config to ensure only tables, and forms are valid options
+    @field_validator("ocr_config")
+    def validate_ocr_config(cls, v):
+        if not v:
+            return v
+        if v and not all([i in ["tables", "forms"] for i in v]):
+            raise ValueError("Invalid ocr_config options")
+        return v

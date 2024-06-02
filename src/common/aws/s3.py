@@ -3,6 +3,17 @@ import os
 import boto3
 
 
+def upload(
+    file_path: str, s3_key: str, bucket: str, session: boto3.Session = None
+):
+    """Upload file to s3"""
+    if not session:
+        session = boto3._get_default_session()
+    client = session.client("s3")
+
+    client.upload_file(file_path, bucket, s3_key)
+
+
 def put(file, s3_key, bucket: str, session: boto3.Session = None):
     """Upload file to s3"""
     if not session:
